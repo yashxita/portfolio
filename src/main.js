@@ -42,8 +42,6 @@ k.scene("main", async () => {
     "player",
   ]);
 
-  // --- NEW ---
-  // Variable to store the destination coordinates for the resume button
   let resumePos = null;
 
   for (const layer of layers) {
@@ -58,12 +56,12 @@ k.scene("main", async () => {
           boundary.name,
         ]);
 
-        // --- NEW ---
-        // Find the resume boundary and calculate a safe position in front of it
+        // --- MODIFIED ---
+        // Find resume boundary and calculate a position slightly closer to it
         if (boundary.name === "resume") {
           resumePos = k.vec2(
             (boundary.x + boundary.width / 2) * scaleFactor,
-            (boundary.y + boundary.height + 20) * scaleFactor
+            (boundary.y + boundary.height + 2) * scaleFactor // Moves player slightly up
           );
         }
 
@@ -95,39 +93,47 @@ k.scene("main", async () => {
     }
   }
 
-  // --- NEW ---
-  // Create the "Go to Resume" button if the resume position was found
+  // --- MODIFIED ---
+  // Create the "Go to Resume" button with updated styling
   if (resumePos) {
+    const buttonWidth = 240;
+    const buttonHeight = 50;
+
     const resumeButton = k.add([
-      k.rect(240, 50, { radius: 8 }), // Background rectangle
-      k.pos(k.width() - 260, 20), // Position top-right
-      k.fixed(), // Make it stick to the screen
-      k.area(), // Make it clickable
+      k.rect(buttonWidth, buttonHeight, { radius: 8 }),
+      k.pos(k.width() - (buttonWidth + 20), 20),
+      k.fixed(),
+      k.area(),
       k.anchor("topleft"),
-      k.color(100, 100, 255), // Button color
-      "resumeButton", // Tag for debugging
+      k.color(100, 100, 255),
+      k.outline(4, k.color(255, 255, 255)), // Added an outline
+      "resumeButton",
     ]);
 
+    // Add text and correctly center it inside the button
     resumeButton.add([
       k.text("Go to Resume", { size: 24, font: "sans-serif" }),
       k.anchor("center"),
-      k.color(255, 255, 255), // Text color
+      k.pos(buttonWidth / 2, buttonHeight / 2), // Position in parent's center
+      k.color(255, 255, 255),
     ]);
 
+    // Update player position and state on click
     resumeButton.onClick(() => {
       if (player.isInDialogue) return;
-      player.pos = resumePos; // Teleport player
+      player.pos = resumePos;
+      player.play("idle-up"); // Face up
+      player.direction = "up"; // Set direction state
     });
-    
-    // Add visual feedback on hover
+
     resumeButton.onHover(() => {
-        k.setCursor("pointer");
-        resumeButton.color = k.rgb(130, 130, 255);
+      k.setCursor("pointer");
+      resumeButton.color = k.rgb(130, 130, 255);
     });
 
     resumeButton.onHoverEnd(() => {
-        k.setCursor("default");
-        resumeButton.color = k.rgb(100, 100, 255);
+      k.setCursor("default");
+      resumeButton.color = k.rgb(100, 100, 255);
     });
   }
 
